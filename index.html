@@ -3,32 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 포트폴리오 대시보드</title>
+    <title>고은이의 2026 연금 포트폴리오 성과 추적 대시보드</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f4f6f9; padding: 20px; }
+        /* 여백 최적화 및 기본 폰트 설정 */
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f4f6f9; padding: 15px; margin: 0; }
         .container { max-width: 1200px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h2 { font-size: 1.2rem; color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .stat-box { display: flex; justify-content: space-around; margin-bottom: 20px; }
-        .stat { background: #fff; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); width: 22%; }
-        .stat h3 { margin: 0; color: #666; font-size: 0.9rem; }
-        .stat p { margin: 5px 0 0; font-size: 1.4rem; font-weight: bold; color: #2c3e50; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { margin: 10px 0; font-size: 1.6rem; }
+        .header p { margin: 5px 0; color: #666; font-size: 0.9rem; }
+
+        /* 요약 박스 (Stat Box) 설정 */
+        .stat-box { display: flex; flex-wrap: wrap; justify-content: space-between; margin-bottom: 15px; gap: 10px; }
+        .stat { background: #fff; padding: 12px; border-radius: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex: 1; min-width: 140px; }
+        .stat h3 { margin: 0; color: #777; font-size: 0.85rem; }
+        .stat p { margin: 5px 0 0; font-size: 1.25rem; font-weight: bold; color: #2c3e50; }
         .highlight { color: #e74c3c !important; }
+
+        /* 그리드 및 카드 설정 */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.08); }
+        h2 { font-size: 1.1rem; color: #333; border-bottom: 2px solid #f1f1f1; padding-bottom: 8px; margin-top: 0; margin-bottom: 10px; }
+
+        /* 모바일 대응 (반응형) */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .header h1 { font-size: 1.4rem; }
+            .stat-box { gap: 8px; }
+            .stat { min-width: 45%; padding: 10px; } /* 모바일에서 2개씩 배치 */
+            .grid { grid-template-columns: 1fr; } /* 모바일에서 1단으로 변경 */
+            .card { padding: 12px; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚀 고은이의 2026 연금 포트폴리오 성과 추적 대시보드</h1>
+            <h1>🚀 고은이의 2026 연금 포트폴리오</h1>
             <p>기준일: 2026.02.06 | 투자금: 1,693만원</p>
         </div>
 
         <div class="stat-box">
             <div class="stat"><h3>현재 총평가액</h3><p>1,693만원</p></div>
-            <div class="stat"><h3>예상 연말평가액</h3><p>2,735만원</p></div>
+            <div class="stat"><h3>예상 연말액</h3><p>2,735만원</p></div>
             <div class="stat"><h3>월 예상 배당</h3><p>18.4만원</p></div>
             <div class="stat"><h3>목표 달성률</h3><p class="highlight">55%</p></div>
         </div>
@@ -47,16 +64,15 @@
                 <canvas id="sectorChart"></canvas>
             </div>
             <div class="card">
-                <h2>📈 섹터별 2026 예상 수익 기여도</h2>
+                <h2>📈 예상 수익 기여도</h2>
                 <canvas id="gainChart"></canvas>
             </div>
         </div>
     </div>
 
     <script>
-        // 데이터 준비
         const labels = ['2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월', '1월'];
-        const totalAssets = [1779, 1865, 1952, 2039, 2125, 2212, 2299, 2386, 2473, 2561, 2648, 2735]; // 만원 단위
+        const totalAssets = [1779, 1865, 1952, 2039, 2125, 2212, 2299, 2386, 2473, 2561, 2648, 2735];
         const monthlyDiv = Array(12).fill(18.4);
         const targetDiv = Array(12).fill(33.5);
 
@@ -73,7 +89,8 @@
                     fill: true,
                     tension: 0.4
                 }]
-            }
+            },
+            options: { plugins: { legend: { display: false } } }
         });
 
         // 2. 배당 차트
@@ -92,7 +109,8 @@
                     borderColor: '#e74c3c',
                     borderDash: [5, 5]
                 }]
-            }
+            },
+            options: { plugins: { legend: { display: false } } }
         });
 
         // 3. 섹터 차트
@@ -101,13 +119,13 @@
             data: {
                 labels: ['금(채굴+CC)', '장기채', '반도체', '원자재', '로봇'],
                 datasets: [{
-                    data: [36, 18, 16, 26, 4], // % 비중 근사치
+                    data: [36, 18, 16, 26, 4],
                     backgroundColor: ['#f1c40f', '#95a5a6', '#9b59b6', '#e67e22', '#34495e']
                 }]
             }
         });
 
-        // 4. 수익 기여도 차트 (자본이득)
+        // 4. 수익 기여도 차트
         new Chart(document.getElementById('gainChart'), {
             type: 'bar',
             data: {
@@ -118,7 +136,7 @@
                     backgroundColor: ['#f1c40f', '#9b59b6', '#e67e22', '#95a5a6', '#34495e']
                 }]
             },
-            options: { indexAxis: 'y' }
+            options: { indexAxis: 'y', plugins: { legend: { display: false } } }
         });
     </script>
 </body>
