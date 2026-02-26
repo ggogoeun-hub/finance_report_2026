@@ -17,12 +17,13 @@
         .stat p { margin: 5px 0 0; font-size: 1.25rem; font-weight: bold; color: #2c3e50; }
         .highlight { color: #e74c3c !important; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.08); }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.08); display: flex; flex-direction: column; }
         h2 { font-size: 1.1rem; color: #333; border-bottom: 2px solid #f1f1f1; padding-bottom: 8px; margin-top: 0; margin-bottom: 10px; }
         .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: right; }
         th { background: #f8f9fa; border-bottom: 2px solid #dee2e6; padding: 10px; }
         td { padding: 10px; border-bottom: 1px solid #eee; }
+        .chart-container { position: relative; flex-grow: 1; min-height: 150px; }
         @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } .stat { min-width: 45%; } }
     </style>
 </head>
@@ -30,43 +31,50 @@
     <div class="container">
         <div class="header">
             <h1>🚀 고은이의 2026 연금 포트폴리오</h1>
-            <p>기준일: 2026.02.09 | 초기 투자금: 1,693만원</p>
+            <p>기준일: 2026.02.26 (2월 결산) | 누적 투자금: 1,784만원</p>
         </div>
 
         <div class="stat-box">
             <div id="stat-current-total" class="stat"><h3>현재 총평가액</h3><p>-</p></div>
             <div class="stat"><h3>예상 연말액</h3><p>2,735만원</p></div>
-            <div class="stat"><h3>월 예상 배당</h3><p>18.4만원</p></div>
+            <div class="stat"><h3>2월 실배당금</h3><p>9,680원</p></div>
             <div id="stat-total-profit" class="stat"><h3>전체 수익률</h3><p class="highlight">-</p></div>
         </div>
 
         <div class="grid">
             <div class="card">
                 <h2>📊 자산 성장 가이드라인 (1년)</h2>
-                <canvas id="assetChart"></canvas>
+                <div class="chart-container"><canvas id="assetChart"></canvas></div>
             </div>
-            <div class="card">
-                <h2>📈 Weekly Tracker (총자산 수익 추적)</h2>
-                <canvas id="weeklyTotalTrackerChart"></canvas>
+            <div class="card" style="text-align: center;">
+                <h2>🌡️ 투자 심리 온도계 (Fear & Greed)</h2>
+                <div class="chart-container" style="display: flex; justify-content: center; align-items: center; min-height: 120px;">
+                    <div style="width: 180px;"><canvas id="fearGreedChart"></canvas></div>
+                </div>
+                <p id="fearGreedStatus" style="font-size: 1.2rem; font-weight: bold; margin-top: 5px;">-</p>
+                <p style="font-size: 0.75rem; color: #666;">수익률 +5% 이상: 과열(Greed) | -5% 이하: 기회(Fear)</p>
             </div>
             <div class="card">
                 <h2>🍰 섹터별 리스크 비중</h2>
-                <canvas id="sectorChart"></canvas>
+                <div class="chart-container"><canvas id="sectorChart"></canvas></div>
             </div>
             <div class="card">
                 <h2>🏆 종목별 수익률 랭킹</h2>
-                <canvas id="performanceChart"></canvas>
+                <div class="chart-container"><canvas id="performanceChart"></canvas></div>
             </div>
         </div>
 
         <div class="grid">
             <div class="card">
-                <h2>📈 섹터별 수익 기여도 (목표 대비 실적)</h2>
-                <canvas id="contributionChart"></canvas>
+                <h2>📈 섹터별 수익 기여도 (자본/배당)</h2>
+                <div class="chart-container" style="min-height: 180px;"><canvas id="capitalGainChart"></canvas></div>
+                <div style="height: 1px; background: #f1f1f1; margin: 15px 0;"></div>
+                <div class="chart-container" style="min-height: 180px;"><canvas id="dividendGainChart"></canvas></div>
             </div>
             <div class="card">
                 <h2>📅 월별 배당금 추적 (현금 흐름)</h2>
-                <canvas id="dividendTrackerChart"></canvas>
+                <div class="chart-container"><canvas id="dividendTrackerChart"></canvas></div>
+                <p style="font-size: 0.8rem; margin-top: 10px; color: #555;"><b>📝 2월 코멘트:</b> "AI반도체, 원자력, 금채굴에서 이익 극대화. 배당금은 예상보다 적어 3월 초 입금 여부 확인 필요!"</p>
             </div>
         </div>
 
@@ -79,8 +87,8 @@
                             <th style="text-align:center;">순위</th>
                             <th style="text-align:left;">종목명</th>
                             <th>수익률</th>
-                            <th>평단가</th>
-                            <th>현재가</th>
+                            <th>평단가(합계)</th>
+                            <th>현재가(합계)</th>
                             <th>평가손익</th>
                         </tr>
                     </thead>
@@ -91,121 +99,114 @@
     </div>
 
     <script>
-        // --- 1. 데이터 정의 ---
-        const rawData = [
-            { name: 'HANARO 글로벌금채굴', avgPrice: 2997050, currentPrice: 3004325, sector: '금' },
-            { name: 'RISE 글로벌원자력', avgPrice: 1157635, currentPrice: 1159800, sector: '원자재' },
-            { name: 'TIGER AI전력인프라', avgPrice: 829000, currentPrice: 830400, sector: '원자재' },
-            { name: 'ACE 미국반도체데일리', avgPrice: 739475, currentPrice: 740300, sector: '반도체' },
-            { name: 'TIGER 구리실물', avgPrice: 1384220, currentPrice: 1384200, sector: '원자재' },
-            { name: 'ACE AI반도체포커스', avgPrice: 2017760, currentPrice: 2016575, sector: '반도체' },
-            { name: 'TIGER 미국30년커버드콜', avgPrice: 2993840, currentPrice: 2988175, sector: '장기채' },
-            { name: 'TIGER 차이나로봇', avgPrice: 752360, currentPrice: 750120, sector: '로봇' },
-            { name: 'SOL 국제금커버드콜', avgPrice: 3113135, currentPrice: 3081975, sector: '금' }
-        ];
-
-        const targetGains = { '금': 152, '반도체': 233, '원자재': 331, '장기채': 54, '로봇': 47 };
+        const sectorLabels = ['금', '반도체', '원자재', '장기채', '로봇'];
         const sectorColors = ['#f1c40f', '#9b59b6', '#e67e22', '#95a5a6', '#34495e'];
 
-        // 데이터 계산
+        // 2월 말 결산 데이터 업데이트
+        const rawData = [
+            { name: 'HANARO 글로벌금채굴', avgPrice: 2997050, currentPrice: 3524950, sector: '금', div: 0 },
+            { name: 'RISE 글로벌원자력', avgPrice: 1157635, currentPrice: 1363650, sector: '원자재', div: 0 },
+            { name: 'TIGER AI전력인프라', avgPrice: 829000, currentPrice: 959200, sector: '원자재', div: 0.968 },
+            { name: 'ACE 미국반도체데일리', avgPrice: 739475, currentPrice: 790350, sector: '반도체', div: 0 },
+            { name: 'TIGER 구리실물', avgPrice: 1384220, currentPrice: 1393650, sector: '원자재', div: 0 },
+            { name: 'ACE AI반도체포커스', avgPrice: 2017760, currentPrice: 2652100, sector: '반도체', div: 0 },
+            { name: 'TIGER 미국30년커버드콜', avgPrice: 2993840, currentPrice: 3027675, sector: '장기채', div: 0 },
+            { name: 'TIGER 차이나로봇', avgPrice: 752360, currentPrice: 742560, sector: '로봇', div: 0 },
+            { name: 'SOL 국제금커버드콜', avgPrice: 3113135, currentPrice: 3172650, sector: '금', div: 0 },
+            { name: 'RISE 배터리 리사이클링', avgPrice: 1854150, currentPrice: 2007840, sector: '원자재', div: 0 } // 신규 편입
+        ];
+
+        const targetCapGains = { '금': 152, '반도체': 233, '원자재': 331, '장기채': 54, '로봇': 47 };
+        const targetDivGains = { '금': 37, '반도체': 10, '원자재': 10, '장기채': 34, '로봇': 0 };
+
         const totalAvg = rawData.reduce((sum, item) => sum + item.avgPrice, 0);
         const totalCurrent = rawData.reduce((sum, item) => sum + item.currentPrice, 0);
+        const totalProfitRate = ((totalCurrent - totalAvg) / totalAvg * 100);
+
         const processedData = rawData.map(item => {
             const profitRate = ((item.currentPrice - item.avgPrice) / item.avgPrice * 100).toFixed(2);
             return { ...item, profitRate: parseFloat(profitRate), profitAmount: item.currentPrice - item.avgPrice };
         }).sort((a, b) => b.profitRate - a.profitRate);
 
-        const actualGainsBySector = {};
+        const actualCap = {}; const actualDiv = {};
+        let currentSectorWeights = {};
+        
         processedData.forEach(item => {
-            actualGainsBySector[item.sector] = (actualGainsBySector[item.sector] || 0) + (item.profitAmount / 10000);
+            actualCap[item.sector] = (actualCap[item.sector] || 0) + (item.profitAmount / 10000);
+            actualDiv[item.sector] = (actualDiv[item.sector] || 0) + item.div;
+            currentSectorWeights[item.sector] = (currentSectorWeights[item.sector] || 0) + item.currentPrice;
         });
 
-        // 요약 정보 업데이트
         document.querySelector('#stat-current-total p').innerText = (totalCurrent/10000).toFixed(1) + '만원';
-        document.querySelector('#stat-total-profit p').innerText = ((totalCurrent-totalAvg)/totalAvg*100).toFixed(2) + '%';
+        document.querySelector('#stat-total-profit p').innerText = totalProfitRate.toFixed(2) + '%';
+        if(totalProfitRate > 0) document.querySelector('#stat-total-profit p').style.color = '#e74c3c';
+        else document.querySelector('#stat-total-profit p').style.color = '#3498db';
 
-        // --- 2. 차트 렌더링 ---
+        const commonOptions = { maintainAspectRatio: false, plugins: { legend: { display: false } }, indexAxis: 'y' };
 
-        // A. 자산 성장 가이드
-        new Chart(document.getElementById('assetChart'), {
-            type: 'line',
-            data: {
-                labels: ['2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월', '1월'],
-                datasets: [{ label: '목표 자산', data: [1779, 1865, 1952, 2039, 2125, 2212, 2299, 2386, 2473, 2561, 2648, 2735], borderColor: '#3498db', fill: true, backgroundColor: 'rgba(52, 152, 219, 0.1)', tension: 0.4 }]
-            }
-        });
-
-        // B. 주간 수익 추적
-        new Chart(document.getElementById('weeklyTotalTrackerChart'), {
-            type: 'line',
-            data: {
-                labels: ['월', '화', '수', '목', '금'],
-                datasets: [
-                    { label: '평가금액', data: [totalAvg*0.99, totalAvg*1.002, totalAvg*1.001, totalAvg*1.005, totalCurrent], borderColor: '#e74c3c', fill: true, backgroundColor: 'rgba(231, 76, 60, 0.1)', tension: 0.3 },
-                    { label: '매수금액', data: Array(5).fill(totalAvg), borderColor: '#2c3e50', borderDash: [5, 5], fill: false, pointRadius: 0 }
-                ]
-            }
-        });
-
-        // C. 종목별 수익률 랭킹
-        new Chart(document.getElementById('performanceChart'), {
-            type: 'bar',
-            data: {
-                labels: processedData.map(d => d.name),
-                datasets: [{ data: processedData.map(d => d.profitRate), backgroundColor: processedData.map(d => d.profitRate >= 0 ? '#ff7675' : '#74b9ff') }]
-            },
-            options: { indexAxis: 'y', plugins: { legend: { display: false } } }
-        });
-
-        // D. 섹터별 수익 기여도 (목표 강조형)
-        const sectorLabels = ['금', '반도체', '원자재', '장기채', '로봇'];
-        new Chart(document.getElementById('contributionChart'), {
+        // 1. 자본이득 기여도
+        new Chart(document.getElementById('capitalGainChart'), {
             type: 'bar',
             data: {
                 labels: sectorLabels,
                 datasets: [
-                    { label: '연간 목표 (컬러)', data: sectorLabels.map(s => targetGains[s]), backgroundColor: sectorColors, barThickness: 20 },
-                    { label: '현재 실적 (회색)', data: sectorLabels.map(s => actualGainsBySector[s] || 0), backgroundColor: '#d1d8e0', barThickness: 10 }
+                    { label: '자본 목표 (만원)', data: sectorLabels.map(s => targetCapGains[s]), backgroundColor: sectorColors, barThickness: 10 },
+                    { label: '현재 실적 (만원)', data: sectorLabels.map(s => actualCap[s] || 0), backgroundColor: '#d1d8e0', barThickness: 10 }
                 ]
             },
-            options: { indexAxis: 'y' }
+            options: { ...commonOptions, plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 10, font: { size: 10 } } } } }
         });
 
-        // E. 월별 배당금 추적 (신규)
-        new Chart(document.getElementById('dividendTrackerChart'), {
+        // 2. 배당이득 기여도 (단위: 만원)
+        new Chart(document.getElementById('dividendGainChart'), {
             type: 'bar',
             data: {
-                labels: ['2월', '3월', '4월', '5월', '6월', '7월'],
+                labels: sectorLabels,
                 datasets: [
-                    { label: '실제 배당금', data: [184000, 184000, 0, 0, 0, 0], backgroundColor: '#2ecc71', borderRadius: 5 },
-                    { label: '목표 (20만)', data: Array(6).fill(200000), type: 'line', borderColor: '#e74c3c', borderDash: [5, 5], fill: false, pointRadius: 0 }
+                    { label: '배당 목표 (만원)', data: sectorLabels.map(s => targetDivGains[s]), backgroundColor: sectorColors, barThickness: 10 },
+                    { label: '현재 실적 (만원)', data: sectorLabels.map(s => actualDiv[s] || 0), backgroundColor: '#d1d8e0', barThickness: 10 }
                 ]
             },
-            options: { scales: { y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString() + '원' } } } }
+            options: { ...commonOptions, plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 10, font: { size: 10 } } } } }
         });
 
-        // F. 섹터 비중 도넛
-        new Chart(document.getElementById('sectorChart'), {
+        // 3. 포트폴리오 온도계
+        let statusText = "Neutral (중립)";
+        let statusColor = "#f1c40f"; // 기본 노란색
+        if(totalProfitRate >= 5) { statusText = "Greed (수익실현 검토)"; statusColor = "#e74c3c"; }
+        else if(totalProfitRate <= -5) { statusText = "Fear (추가매수 기회)"; statusColor = "#3498db"; }
+        document.getElementById('fearGreedStatus').innerText = statusText;
+        document.getElementById('fearGreedStatus').style.color = statusColor;
+
+        new Chart(document.getElementById('fearGreedChart'), {
             type: 'doughnut',
             data: {
-                labels: sectorLabels,
-                datasets: [{ data: [36, 16, 26, 18, 4], backgroundColor: sectorColors }]
-            }
+                datasets: [{
+                    data: [Math.min(Math.max(totalProfitRate + 10, 0), 20), Math.max(20 - (totalProfitRate + 10), 0)], // -10% ~ +10% 
+                    backgroundColor: [statusColor, '#eee'],
+                    circumference: 180,
+                    rotation: 270,
+                }]
+            },
+            options: { cutout: '75%', maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
         });
 
-        // --- 3. 테이블 생성 ---
+        // 4. 기타 차트
+        new Chart(document.getElementById('assetChart'), { type: 'line', data: { labels: ['2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월', '1월'], datasets: [{ label: '목표 자산', data: [1779, 1865, 1952, 2039, 2125, 2212, 2299, 2386, 2473, 2561, 2648, 2735], borderColor: '#3498db', fill: true, backgroundColor: 'rgba(52, 152, 219, 0.1)', tension: 0.4 }, { label: '실제 자산', data: [totalCurrent/10000, null, null, null, null, null, null, null, null, null, null, null], borderColor: '#f1c40f', borderWidth: 3, pointRadius: 5, fill: false }] }, options: { maintainAspectRatio: false } });
+        new Chart(document.getElementById('sectorChart'), { type: 'doughnut', data: { labels: sectorLabels, datasets: [{ data: sectorLabels.map(s => currentSectorWeights[s] || 0), backgroundColor: sectorColors }] }, options: { maintainAspectRatio: false } });
+        new Chart(document.getElementById('performanceChart'), { type: 'bar', data: { labels: processedData.map(d => d.name), datasets: [{ data: processedData.map(d => d.profitRate), backgroundColor: processedData.map(d => d.profitRate >= 0 ? '#ff7675' : '#74b9ff') }] }, options: { ...commonOptions, maintainAspectRatio: false } });
+        
+        const monthlyDivData = [0.968, 0, 0, 0, 0, 0];
+        let cumulativeDiv = [];
+        monthlyDivData.reduce((a, b, i) => { cumulativeDiv[i] = a + b; return a + b; }, 0);
+        
+        new Chart(document.getElementById('dividendTrackerChart'), { type: 'bar', data: { labels: ['2월', '3월', '4월', '5월', '6월', '7월'], datasets: [{ label: '실제 배당(만)', data: monthlyDivData, backgroundColor: '#2ecc71' }, { label: '누적 배당(만)', data: cumulativeDiv, type: 'line', borderColor: '#3498db', borderDash: [5, 5] }] }, options: { maintainAspectRatio: false } });
+
+        // 5. 테이블 생성
         const tableBody = document.getElementById('portfolio-table-body');
         processedData.forEach((item, index) => {
-            const row = document.createElement('tr');
-            const color = item.profitRate >= 0 ? '#e74c3c' : '#3498db';
-            row.innerHTML = `
-                <td style="text-align:center;">${index + 1}</td>
-                <td style="text-align:left;"><b>${item.name}</b></td>
-                <td style="color: ${color}; font-weight: bold;">${item.profitRate > 0 ? '+' : ''}${item.profitRate}%</td>
-                <td>${item.avgPrice.toLocaleString()}</td>
-                <td>${item.currentPrice.toLocaleString()}</td>
-                <td style="color: ${color};">${item.profitAmount > 0 ? '+' : ''}${item.profitAmount.toLocaleString()}</td>
-            `;
+            const row = document.createElement('tr'); const color = item.profitRate >= 0 ? '#e74c3c' : '#3498db';
+            row.innerHTML = `<td style="text-align:center;">${index + 1}</td><td style="text-align:left;"><b>${item.name}</b></td><td style="color: ${color}; font-weight: bold;">${item.profitRate > 0 ? '+' : ''}${item.profitRate}%</td><td>${item.avgPrice.toLocaleString()}</td><td>${item.currentPrice.toLocaleString()}</td><td style="color: ${color};">${item.profitAmount > 0 ? '+' : ''}${item.profitAmount.toLocaleString()}</td>`;
             tableBody.appendChild(row);
         });
     </script>
