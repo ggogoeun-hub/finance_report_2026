@@ -31,13 +31,13 @@
     <div class="container">
         <div class="header">
             <h1>🚀 고은이의 2026 연금 포트폴리오</h1>
-            <p>기준일: 2026.02.26 (2월 결산) | 누적 투자금: 1,784만원</p>
+            <p>기준일: 2026.03.31 (3월 결산) | 누적 투자금: 1,784만원</p>
         </div>
 
         <div class="stat-box">
             <div id="stat-current-total" class="stat"><h3>현재 총평가액</h3><p>-</p></div>
             <div class="stat"><h3>예상 연말액</h3><p>2,735만원</p></div>
-            <div class="stat"><h3>2월 실배당금</h3><p>9,680원</p></div>
+            <div class="stat"><h3>3월 실배당금</h3><p>49,730원</p></div>
             <div id="stat-total-profit" class="stat"><h3>전체 수익률</h3><p class="highlight">-</p></div>
         </div>
 
@@ -74,7 +74,7 @@
             <div class="card">
                 <h2>📅 월별 배당금 추적 (현금 흐름)</h2>
                 <div class="chart-container"><canvas id="dividendTrackerChart"></canvas></div>
-                <p style="font-size: 0.8rem; margin-top: 10px; color: #555;"><b>📝 2월 코멘트:</b> "AI반도체, 원자력, 금채굴에서 이익 극대화. 배당금은 예상보다 적어 3월 초 입금 여부 확인 필요!"</p>
+                <p style="font-size: 0.8rem; margin-top: 10px; color: #555;"><b>📝 3월 코멘트:</b> "하락장에도 반도체와 원자력이 선방. 배당금의 위력이 나타나기 시작함!"</p>
             </div>
         </div>
 
@@ -102,18 +102,18 @@
         const sectorLabels = ['금', '반도체', '원자재', '장기채', '로봇'];
         const sectorColors = ['#f1c40f', '#9b59b6', '#e67e22', '#95a5a6', '#34495e'];
 
-        // 2월 말 결산 데이터 업데이트
+        // 3월 말 결산 데이터 업데이트 (2026.03.31 종가 기준)
         const rawData = [
-            { name: 'HANARO 글로벌금채굴', avgPrice: 2997050, currentPrice: 3524950, sector: '금', div: 0 },
-            { name: 'RISE 글로벌원자력', avgPrice: 1157635, currentPrice: 1363650, sector: '원자재', div: 0 },
-            { name: 'TIGER AI전력인프라', avgPrice: 829000, currentPrice: 959200, sector: '원자재', div: 0.968 },
-            { name: 'ACE 미국반도체데일리', avgPrice: 739475, currentPrice: 790350, sector: '반도체', div: 0 },
-            { name: 'TIGER 구리실물', avgPrice: 1384220, currentPrice: 1393650, sector: '원자재', div: 0 },
-            { name: 'ACE AI반도체포커스', avgPrice: 2017760, currentPrice: 2652100, sector: '반도체', div: 0 },
-            { name: 'TIGER 미국30년커버드콜', avgPrice: 2993840, currentPrice: 3027675, sector: '장기채', div: 0 },
-            { name: 'TIGER 차이나로봇', avgPrice: 752360, currentPrice: 742560, sector: '로봇', div: 0 },
-            { name: 'SOL 국제금커버드콜', avgPrice: 3113135, currentPrice: 3172650, sector: '금', div: 0 },
-            { name: 'RISE 배터리 리사이클링', avgPrice: 1854150, currentPrice: 2007840, sector: '원자재', div: 0 } // 신규 편입
+            { name: 'HANARO 글로벌금채굴', avgPrice: 2997050, currentPrice: 3102500, sector: '금', div: 0 },
+            { name: 'RISE 글로벌원자력', avgPrice: 1157635, currentPrice: 1272000, sector: '원자재', div: 0 },
+            { name: 'TIGER AI전력인프라', avgPrice: 829000, currentPrice: 899600, sector: '원자재', div: 0.968 },
+            { name: 'ACE 미국반도체데일리', avgPrice: 739475, currentPrice: 744425, sector: '반도체', div: 0.918 },
+            { name: 'TIGER 구리실물', avgPrice: 1384220, currentPrice: 1387800, sector: '원자재', div: 0 },
+            { name: 'ACE AI반도체포커스', avgPrice: 2017760, currentPrice: 2295700, sector: '반도체', div: 0 },
+            { name: 'TIGER 미국30년커버드콜', avgPrice: 2993840, currentPrice: 2913125, sector: '장기채', div: 2.962 },
+            { name: 'TIGER 차이나로봇', avgPrice: 752360, currentPrice: 666960, sector: '로봇', div: 0 },
+            { name: 'SOL 국제금커버드콜', avgPrice: 3113135, currentPrice: 2983500, sector: '금', div: 1.092 },
+            { name: 'RISE 배터리 리사이클링', avgPrice: 1854150, currentPrice: 1755450, sector: '원자재', div: 0 }
         ];
 
         const targetCapGains = { '금': 152, '반도체': 233, '원자재': 331, '장기채': 54, '로봇': 47 };
@@ -192,11 +192,12 @@
         });
 
         // 4. 기타 차트
-        new Chart(document.getElementById('assetChart'), { type: 'line', data: { labels: ['2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월', '1월'], datasets: [{ label: '목표 자산', data: [1779, 1865, 1952, 2039, 2125, 2212, 2299, 2386, 2473, 2561, 2648, 2735], borderColor: '#3498db', fill: true, backgroundColor: 'rgba(52, 152, 219, 0.1)', tension: 0.4 }, { label: '실제 자산', data: [totalCurrent/10000, null, null, null, null, null, null, null, null, null, null, null], borderColor: '#f1c40f', borderWidth: 3, pointRadius: 5, fill: false }] }, options: { maintainAspectRatio: false } });
+        new Chart(document.getElementById('assetChart'), { type: 'line', data: { labels: ['2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월', '1월'], datasets: [{ label: '목표 자산', data: [1779, 1865, 1952, 2039, 2125, 2212, 2299, 2386, 2473, 2561, 2648, 2735], borderColor: '#3498db', fill: true, backgroundColor: 'rgba(52, 152, 219, 0.1)', tension: 0.4 }, { label: '실제 자산', data: [1963.4, totalCurrent/10000, null, null, null, null, null, null, null, null, null, null], borderColor: '#f1c40f', borderWidth: 3, pointRadius: 5, fill: false }] }, options: { maintainAspectRatio: false } });
         new Chart(document.getElementById('sectorChart'), { type: 'doughnut', data: { labels: sectorLabels, datasets: [{ data: sectorLabels.map(s => currentSectorWeights[s] || 0), backgroundColor: sectorColors }] }, options: { maintainAspectRatio: false } });
         new Chart(document.getElementById('performanceChart'), { type: 'bar', data: { labels: processedData.map(d => d.name), datasets: [{ data: processedData.map(d => d.profitRate), backgroundColor: processedData.map(d => d.profitRate >= 0 ? '#ff7675' : '#74b9ff') }] }, options: { ...commonOptions, maintainAspectRatio: false } });
         
-        const monthlyDivData = [0.968, 0, 0, 0, 0, 0];
+        // 3월 배당금 데이터 (단위: 만원)
+        const monthlyDivData = [0.968, 4.973, 0, 0, 0, 0];
         let cumulativeDiv = [];
         monthlyDivData.reduce((a, b, i) => { cumulativeDiv[i] = a + b; return a + b; }, 0);
         
